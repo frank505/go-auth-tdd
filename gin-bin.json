@@ -1,0 +1,7 @@
+{
+  "port": 4500,
+  "immediate-start": true,
+  "app_root": ".",
+  "build_delay": 1000,
+  "bin": "go run main.go"
+}
