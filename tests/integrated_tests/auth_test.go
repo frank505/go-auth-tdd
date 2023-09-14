@@ -35,7 +35,7 @@ func TestLoginApi(t *testing.T) {
 	if errorSetup != nil {
 		fmt.Println("Error with setup", errorSetup)
 	}
-	bodyData := `{"email": "example@email.com", "password": "password123"}`
+	bodyData := `{"Email": "akpufranklin2@gmail.com", "	Password": "password123"}`
 	req, err := http.NewRequest("POST", "/api/public/login", bytes.NewBufferString(bodyData))
 	if err != nil {
 		t.Fatal(err)
@@ -48,5 +48,6 @@ func TestLoginApi(t *testing.T) {
 	r.ServeHTTP(rr, req)
 	// Create a test HTTP request for login with JSON payload
 	// Check the response status code and body
+	fmt.Println("Err", rr.Body)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }

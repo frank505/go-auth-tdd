@@ -4,6 +4,7 @@ go 1.21.0
 
 require (
 	github.com/0xAX/notificator v0.0.0-20220220101646-ee9b8921e557 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/bytedance/sonic v1.9.1 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/cilium/ebpf v0.7.0 // indirect
@@ -19,9 +20,10 @@ require (
 	github.com/gin-gonic/gin v1.9.1 // indirect
 	github.com/go-delve/delve v1.21.0 // indirect
 	github.com/go-delve/liner v1.2.3-0.20220127212407-d32d89dd2a5d // indirect
+	github.com/go-ozzo/ozzo-validation v3.6.0+incompatible // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.15.3 // indirect
+	github.com/go-playground/validator/v10 v10.15.4 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/google/go-dap v0.9.1 // indirect

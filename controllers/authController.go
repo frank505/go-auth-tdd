@@ -1,23 +1,44 @@
 package controllers
 
 import (
-	"github.com/thedevsaddam/govalidator"
+	"github.com/gin-gonic/gin"
+	validation "github.com/go-ozzo/ozzo-validation"
+	"github.com/go-ozzo/ozzo-validation/is"
 	"gomysqlapp/appconfig"
 	"gomysqlapp/auth"
 	"gomysqlapp/database"
 	"gomysqlapp/models"
-	"log"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
 )
 
 // LoginPayload login body
 // LoginPayload is a struct that contains the fields for a user's login credentials
 type LoginPayload struct {
-	Email    string `json:"email" valid:"required|email|min:4|max:20"`
-	Password string `json:"password" valid:"required"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (lp LoginPayload) LoginValidate() error {
+	return validation.ValidateStruct(&lp,
+		validation.Field(&lp.Email, validation.Required, is.Email),
+		validation.Field(&lp.Password, validation.Required, validation.Length(6, 20)),
+	)
+}
+
+type SignUpPayload struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (sp SignUpPayload) RegisterValidate() error {
+
+	return validation.ValidateStruct(&sp,
+		validation.Field(&sp.Name, validation.Required),
+		validation.Field(&sp.Email, validation.Required, is.Email),
+		validation.Field(&sp.Password, validation.Required, validation.Length(6, 20)),
+	)
 }
 
 // LoginResponse token response
@@ -37,30 +58,44 @@ func Signup(c *gin.Context) {
 	var user models.User
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
-		log.Println(err)
-		c.JSON(400, gin.H{
-			"Error": "Invalid Inputs ",
+		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			Code:    400,
+			Context: c,
+			Err:     err,
 		})
-		c.Abort()
+		return
+	}
+	payload := SignUpPayload{
+		Name:     user.Name,
+		Email:    user.Email,
+		Password: user.Password,
+	}
+	if err = payload.RegisterValidate(); err != nil {
+		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			Code:    400,
+			Context: c,
+			Err:     err,
+		})
 		return
 	}
 
 	err = user.HashPassword(user.Password)
 	if err != nil {
-		log.Println(err.Error())
-		c.JSON(500, gin.H{
-			"Error": "Error Hashing Password",
+		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			Code:    500,
+			Context: c,
+			Err:     err,
 		})
-		c.Abort()
+
 		return
 	}
 	err = user.CreateUserRecord()
 	if err != nil {
-		log.Println(err)
-		c.JSON(500, gin.H{
-			"Error": "Error Creating User",
+		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			Code:    500,
+			Context: c,
+			Err:     err,
 		})
-		c.Abort()
 		return
 	}
 	c.JSON(200, gin.H{
@@ -86,24 +121,14 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-
-	opts := govalidator.Options{
-		Request: c.Request,
-		Data:    &payload,
-		Rules: govalidator.MapData{
-			"email":    []string{"required", "email", "min:4", "max:20"},
-			"password": []string{"required"},
-		},
-	}
-
-	v := govalidator.New(opts)
-	errorValidator := v.ValidateJSON()
-
-	if len(errorValidator) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": errorValidator})
+	if err := payload.LoginValidate(); err != nil {
+		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			Code:    400,
+			Context: c,
+			Err:     err,
+		})
 		return
 	}
-
 	result := database.GlobalDB.Where("email = ?", payload.Email).First(&user)
 	if result.Error == gorm.ErrRecordNotFound {
 		appconfig.CustomErrResponse(appconfig.CustomErrorParams{

@@ -14,8 +14,11 @@ func Authz() gin.HandlerFunc {
 		clientToken := c.Request.Header.Get("Authorization")
 		if clientToken == "" {
 			// If the Authorization header is not present, return a 403 status code
-			c.JSON(403, "No Authorization header provided")
-			c.Abort()
+			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+				Code:     403,
+				Messages: []string{"No Authorization header provided"},
+			})
+
 			return
 		}
 		// Split the Authorization header to get the token
@@ -24,9 +27,10 @@ func Authz() gin.HandlerFunc {
 			// Trim the token
 			clientToken = strings.TrimSpace(extractedToken[1])
 		} else {
-			// If the token is not in the correct format, return a 400 status code
-			c.JSON(400, "Incorrect Format of Authorization Token")
-			c.Abort()
+			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+				Code:     400,
+				Messages: []string{"No Authorization header provided"},
+			})
 			return
 		}
 		// Create a JwtWrapper with the secret key and issuer
@@ -39,7 +43,10 @@ func Authz() gin.HandlerFunc {
 		claims, err := jwtWrapper.ValidateToken(clientToken)
 		if err != nil {
 			// If the token is not valid, return a 401 status code
-			c.JSON(401, err.Error())
+			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+				Code: 403,
+				Err:  err.Error(),
+			})
 			c.Abort()
 			return
 		}

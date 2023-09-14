@@ -15,6 +15,7 @@ type CustomErrorParams struct {
 }
 
 func CustomErrResponse(params CustomErrorParams) {
+	//log here
 	if params.Err != nil {
 		// Handle the validation error
 		if validationErrors, ok := params.Err.(validator.ValidationErrors); ok {
