@@ -29,6 +29,8 @@ func CustomErrResponse(params CustomErrorParams) {
 				errorMessages[fieldName] = errorMessage
 			}
 
+			// continue by handling mysql errors
+
 			params.Context.JSON(params.Code, gin.H{
 				"Errors": errorMessages,
 			})

@@ -89,17 +89,18 @@ func Signup(c *gin.Context) {
 
 		return
 	}
+
 	err = user.CreateUserRecord()
 	if err != nil {
 		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
-			Code:    500,
+			Code:    400,
 			Context: c,
 			Err:     err,
 		})
 		return
 	}
 	c.JSON(200, gin.H{
-		"Message": "Sucessfully Register",
+		"Message": "User Created Successfully",
 	})
 }
 
