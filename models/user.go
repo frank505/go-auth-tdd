@@ -20,10 +20,10 @@ type User struct {
 // CreateUserRecord creates a user record in the database
 // CreateUserRecord takes a pointer to a User struct and creates a user record in the database
 // It returns an error if there is an issue creating the user record
-func (user *User) CreateUserRecord() error {
+func (user *User) CreateUserRecord() *gorm.DB {
 	result := database.GlobalDB.Create(&user)
-	if result.Error != nil {
-		return result.Error
+	if result != nil {
+		return result
 	}
 	return nil
 }

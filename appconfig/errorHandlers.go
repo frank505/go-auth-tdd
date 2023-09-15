@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/go-sql-driver/mysql"
 )
 
 type CustomErrorParams struct {
@@ -28,7 +29,6 @@ func CustomErrResponse(params CustomErrorParams) {
 				errorMessage := fmt.Sprintf(err.Error())
 				errorMessages[fieldName] = errorMessage
 			}
-
 			// continue by handling mysql errors
 
 			params.Context.JSON(params.Code, gin.H{
@@ -37,25 +37,32 @@ func CustomErrResponse(params CustomErrorParams) {
 
 			params.Context.Abort()
 			return
-		} else {
-			// Handle other types of errors
+		} else if mysqlErr, ok := params.Err.(*mysql.MySQLError); ok {
+			fmt.Println("mysqlError", mysqlErr)
+
 			params.Context.JSON(params.Code, gin.H{
-				"Error": params.Err,
+				"Errors": "Failed to create user",
 			})
+
+			params.Context.Abort()
+			return
+		} else if len(params.Messages) < 1 {
+			params.Context.JSON(params.Code, gin.H{
+				"Errors": params.Err,
+			})
+
+			params.Context.Abort()
+			return
 		}
-		params.Context.Abort()
-		return
+
 	}
 
 	if len(params.Messages) > 0 {
 		params.Context.JSON(params.Code, gin.H{
 			"Error": params.Messages[0],
 		})
+		params.Context.Abort()
+		return
 	}
 
-	params.Context.JSON(params.Code, gin.H{
-		"Error": params.Err,
-	})
-	params.Context.Abort()
-	return
 }

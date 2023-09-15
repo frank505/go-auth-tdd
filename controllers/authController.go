@@ -90,12 +90,22 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	err = user.CreateUserRecord()
-	if err != nil {
+	result := database.GlobalDB.Where("email = ?", payload.Email).First(&user)
+	if result != nil {
 		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
-			Code:    400,
+			Code:     401,
+			Context:  c,
+			Messages: []string{"User with email address " + payload.Email + " already exist"},
+		})
+		return
+	}
+
+	createUser := user.CreateUserRecord()
+	if createUser.Error != nil {
+		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			Code:    401,
 			Context: c,
-			Err:     err,
+			Err:     createUser.Error,
 		})
 		return
 	}
