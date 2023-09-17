@@ -2,9 +2,18 @@ package tests
 
 import (
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
+	"gomysqlapp/appconfig"
+	"gomysqlapp/auth"
 	"gomysqlapp/database"
 	"gomysqlapp/models"
 )
+
+type UserData struct {
+	Name     string
+	Email    string
+	Password string
+}
 
 func Setup() error {
 	// Load environment variables from .env
@@ -22,4 +31,36 @@ func Setup() error {
 	}
 
 	return nil
+}
+
+func CreateNewUser(user UserData) UserData {
+	errorSetup := Setup()
+	if errorSetup != nil {
+		fmt.Println("Error with setup", errorSetup)
+	}
+
+	database.GlobalDB.Table("users").Create(&user)
+	return user
+}
+
+func GetJWTToken(user UserData) string {
+	password := user.Password
+	bytes, errPassword := bcrypt.GenerateFromPassword([]byte(password), 14)
+	if errPassword != nil {
+		fmt.Println("Error:", errPassword)
+	}
+	user.Password = string(bytes)
+	CreateNewUser(user)
+	jwtWrapperParams := auth.JwtWrapper{
+		SecretKey:         appconfig.GetEnvParam("JWT_SECRET"),
+		Issuer:            appconfig.GetEnvParam("JWT_ISSUER"),
+		ExpirationHours:   720,
+		ExpirationMinutes: 166640,
+	}
+
+	signedToken, errorTokenSigning := jwtWrapperParams.GenerateToken(user.Email)
+	if errorTokenSigning != nil {
+		fmt.Println("Error:", errorTokenSigning)
+	}
+	return signedToken
 }

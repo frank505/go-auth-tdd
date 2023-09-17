@@ -55,7 +55,7 @@ func InitDatabase(state string) (err error) {
 			envVars["DB_USERNAME"],
 			envVars["DB_PASSWORD"],
 			envVars["DATABASE_HOST"],
-			envVars["DB_DATABASE"],
+			envVars["TEST_DB"],
 		)
 	} else {
 
@@ -69,7 +69,7 @@ func InitDatabase(state string) (err error) {
 			config["DB_USERNAME"],
 			config["DB_PASSWORD"],
 			config["DATABASE_HOST"],
-			config["TEST_DB"],
+			config["DB_DATABASE"],
 		)
 	}
 

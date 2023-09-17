@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gomysqlapp/appconfig"
 	"gomysqlapp/auth"
-
 	"strings"
 )
 
@@ -21,7 +20,7 @@ func Authz() gin.HandlerFunc {
 
 			return
 		}
-		// Split the Authorization header to get the token
+		//// Split the Authorization header to get the token
 		extractedToken := strings.Split(clientToken, "Bearer ")
 		if len(extractedToken) == 2 {
 			// Trim the token
@@ -33,23 +32,30 @@ func Authz() gin.HandlerFunc {
 			})
 			return
 		}
-		// Create a JwtWrapper with the secret key and issuer
+		//// Create a JwtWrapper with the secret key and issuer
 		jwtWrapper := auth.JwtWrapper{
-			SecretKey:       appconfig.GetEnvParam("JWT_SECRET"),
-			Issuer:          appconfig.GetEnvParam("JWT_ISSUER"),
-			ExpirationHours: 720,
+			SecretKey:         appconfig.GetEnvParam("JWT_SECRET"),
+			Issuer:            appconfig.GetEnvParam("JWT_ISSUER"),
+			ExpirationHours:   720,
+			ExpirationMinutes: 166640,
 		}
-		// Validate the token
-		claims, err := jwtWrapper.ValidateToken(clientToken)
+
+		//
+		////// Validate the token
+		err, claims := jwtWrapper.ValidateToken(clientToken)
 		if err != nil {
 			// If the token is not valid, return a 401 status code
-			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
-				Code: 403,
-				Err:  err.Error(),
+			c.JSON(403, gin.H{
+				"err": err,
 			})
+			//appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+			//	Code: 403,
+			//	Err:  ,
+			//})
 			c.Abort()
 			return
 		}
+
 		// Set the claims in the context
 		c.Set("email", claims.Email)
 		// Continue to the next handler

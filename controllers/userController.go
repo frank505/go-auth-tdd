@@ -14,7 +14,7 @@ type extendEmailToContext struct {
 
 func Profile(c *gin.Context) {
 	var user models.User
-	// Get the email from the authorization middleware
+	//// Get the email from the authorization middleware
 	email, _ := c.Get("email")
 	result := database.GlobalDB.Where("email = ?", email.(string)).First(&user)
 	if result.Error == gorm.ErrRecordNotFound {
@@ -26,6 +26,12 @@ func Profile(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"user": result,
+		"user": gin.H{
+			"Name":       user.Name,
+			"Email":      user.Email,
+			"created_at": user.CreatedAt,
+			"updated_at": user.UpdatedAt,
+		},
 	})
+	return
 }

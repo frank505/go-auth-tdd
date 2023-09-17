@@ -91,7 +91,8 @@ func Signup(c *gin.Context) {
 	}
 
 	result := database.GlobalDB.Where("email = ?", payload.Email).First(&user)
-	if result != nil {
+
+	if result.RowsAffected > 0 {
 		appconfig.CustomErrResponse(appconfig.CustomErrorParams{
 			Code:     401,
 			Context:  c,
@@ -159,10 +160,12 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
+
 	jwtWrapper := auth.JwtWrapper{
-		SecretKey:       appconfig.GetEnvParam("JWT_SECRET"),
-		Issuer:          appconfig.GetEnvParam("JWT_ISSUER"),
-		ExpirationHours: 720,
+		SecretKey:         appconfig.GetEnvParam("JWT_SECRET"),
+		Issuer:            appconfig.GetEnvParam("JWT_ISSUER"),
+		ExpirationHours:   720,
+		ExpirationMinutes: 166640,
 	}
 	signedToken, err := jwtWrapper.GenerateToken(user.Email)
 	if err != nil {
@@ -174,7 +177,7 @@ func Login(c *gin.Context) {
 		})
 		return
 	}
-	signedtoken, err := jwtWrapper.RefreshToken(user.Email)
+	refreshToken, err := jwtWrapper.RefreshToken(user.Email)
 	if err != nil {
 		log.Println(err)
 
@@ -187,7 +190,7 @@ func Login(c *gin.Context) {
 	}
 	tokenResponse := LoginResponse{
 		Token:        signedToken,
-		RefreshToken: signedtoken,
+		RefreshToken: refreshToken,
 	}
-	c.JSON(200, tokenResponse)
+	c.JSON(201, tokenResponse)
 }

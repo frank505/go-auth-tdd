@@ -22,7 +22,6 @@ func CustomErrResponse(params CustomErrorParams) {
 		if validationErrors, ok := params.Err.(validator.ValidationErrors); ok {
 			// Create a map to hold validation error messages
 			errorMessages := make(map[string]string)
-
 			// Loop through validationErrors to collect error messages
 			for _, err := range validationErrors {
 				fieldName := err.Field()
@@ -30,23 +29,20 @@ func CustomErrResponse(params CustomErrorParams) {
 				errorMessages[fieldName] = errorMessage
 			}
 			// continue by handling mysql errors
-
 			params.Context.JSON(params.Code, gin.H{
 				"Errors": errorMessages,
 			})
-
 			params.Context.Abort()
 			return
 		} else if mysqlErr, ok := params.Err.(*mysql.MySQLError); ok {
 			fmt.Println("mysqlError", mysqlErr)
 
 			params.Context.JSON(params.Code, gin.H{
-				"Errors": "Failed to create user",
+				"Errors": "Duplicate key",
 			})
-
 			params.Context.Abort()
 			return
-		} else if len(params.Messages) < 1 {
+		} else {
 			params.Context.JSON(params.Code, gin.H{
 				"Errors": params.Err,
 			})
@@ -55,9 +51,7 @@ func CustomErrResponse(params CustomErrorParams) {
 			return
 		}
 
-	}
-
-	if len(params.Messages) > 0 {
+	} else if len(params.Messages) > 0 {
 		params.Context.JSON(params.Code, gin.H{
 			"Error": params.Messages[0],
 		})
