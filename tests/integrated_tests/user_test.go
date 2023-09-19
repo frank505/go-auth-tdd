@@ -50,3 +50,19 @@ func TestViewProfile(t *testing.T) {
 	assert.Equal(t, actualResponse.User.Email, user.Email)
 	assert.Equal(t, actualResponse.User.Name, user.Name)
 }
+
+func TestInvalidToken(t *testing.T) {
+	userToken := gofakeit.UUID()
+
+	req, err := http.NewRequest("GET", "/api/protected/profile", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer "+userToken)
+	// Create a response recorder to capture the response
+	rr := httptest.NewRecorder()
+	r := router.SetupRouter()
+
+	// Serve the test request using the test router
+	r.ServeHTTP(rr, req)
+}

@@ -14,6 +14,7 @@ func Authz() gin.HandlerFunc {
 		if clientToken == "" {
 			// If the Authorization header is not present, return a 403 status code
 			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+				Context:  c,
 				Code:     403,
 				Messages: []string{"No Authorization header provided"},
 			})
@@ -27,6 +28,7 @@ func Authz() gin.HandlerFunc {
 			clientToken = strings.TrimSpace(extractedToken[1])
 		} else {
 			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+				Context:  c,
 				Code:     400,
 				Messages: []string{"No Authorization header provided"},
 			})
@@ -40,18 +42,13 @@ func Authz() gin.HandlerFunc {
 			ExpirationMinutes: 166640,
 		}
 
-		//
-		////// Validate the token
 		err, claims := jwtWrapper.ValidateToken(clientToken)
 		if err != nil {
-			// If the token is not valid, return a 401 status code
-			c.JSON(403, gin.H{
-				"err": err,
+			appconfig.CustomErrResponse(appconfig.CustomErrorParams{
+				Context:  c,
+				Code:     403,
+				Messages: []string{"error: " + err.Error()},
 			})
-			//appconfig.CustomErrResponse(appconfig.CustomErrorParams{
-			//	Code: 403,
-			//	Err:  ,
-			//})
 			c.Abort()
 			return
 		}
